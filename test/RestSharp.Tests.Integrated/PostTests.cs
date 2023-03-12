@@ -47,7 +47,8 @@ public class PostTests {
         response.Data!.Message.Should().Be($"Works! Length: {length}");
     }
 
+    // ReSharper disable once ClassNeverInstantiated.Local
     class Response {
-        public string Message { get; set; }
+        public string? Message { get; set; }
     }
 }

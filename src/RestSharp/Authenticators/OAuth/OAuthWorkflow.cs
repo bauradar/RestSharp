@@ -131,7 +131,7 @@ sealed class OAuthWorkflow {
         var uri           = new Uri(url);
         var urlParameters = HttpUtility.ParseQueryString(uri.Query);
 
-        allParameters.AddRange(urlParameters.AllKeys.Select(x => new WebPair(x!, urlParameters[x]!)));
+        allParameters.AddRange(urlParameters.AllKeys.Select(x => new WebPair(x!, urlParameters[x])));
 
         var timestamp = OAuthTools.GetTimestamp();
         var nonce     = OAuthTools.GetNonce();
@@ -164,9 +164,7 @@ sealed class OAuthWorkflow {
         Ensure.NotEmpty(ClientUsername, nameof(ClientUsername));
     }
 
-    void ValidateProtectedResourceState() {
-        Ensure.NotEmpty(ConsumerKey, nameof(ConsumerKey));
-    }
+    void ValidateProtectedResourceState() => Ensure.NotEmpty(ConsumerKey, nameof(ConsumerKey));
 
     WebPairCollection GenerateAuthParameters(string timestamp, string nonce)
         => new WebPairCollection {

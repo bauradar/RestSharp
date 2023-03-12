@@ -49,7 +49,7 @@ public sealed class MultipartFormDataTests : IDisposable {
     readonly RestClient   _client;
 
     static class RequestHandler {
-        public static string CapturedContentType { get; set; }
+        public static string? CapturedContentType { get; set; }
 
         public static void Handle(HttpListenerContext context) {
             CapturedContentType = context.Request.ContentType;
@@ -185,6 +185,6 @@ public sealed class MultipartFormDataTests : IDisposable {
         };
         request.AddJsonBody(jsonData);
 
-        var response = await _client.ExecuteAsync(request);
+        await _client.ExecuteAsync(request);
     }
 }

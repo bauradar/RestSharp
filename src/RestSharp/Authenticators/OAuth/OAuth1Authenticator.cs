@@ -201,8 +201,7 @@ public class OAuth1Authenticator : IAuthenticator {
         var url              = client.BuildUri(request).ToString();
         var queryStringStart = url.IndexOf('?');
 
-        if (queryStringStart != -1)
-            url = url.Substring(0, queryStringStart);
+        if (queryStringStart != -1) url = url.Substring(0, queryStringStart);
 
         var method = request.Method.ToString().ToUpperInvariant();
 
@@ -241,27 +240,23 @@ public class OAuth1Authenticator : IAuthenticator {
         var oauthParameters = ParameterHandling switch {
             OAuthParameterHandling.HttpAuthorizationHeader => CreateHeaderParameters(),
             OAuthParameterHandling.UrlOrPostParameters     => CreateUrlParameters(),
-            _ =>
-                throw new ArgumentOutOfRangeException(nameof(ParameterHandling))
+            _                                              => throw new ArgumentOutOfRangeException(nameof(ParameterHandling))
         };
 
         request.AddOrUpdateParameters(oauthParameters);
 
-        IEnumerable<Parameter> CreateHeaderParameters()
-            => new[] { new HeaderParameter(KnownHeaders.Authorization, GetAuthorizationHeader()) };
+        IEnumerable<Parameter> CreateHeaderParameters() => new[] { new HeaderParameter(KnownHeaders.Authorization, GetAuthorizationHeader()) };
 
-        IEnumerable<Parameter> CreateUrlParameters()
-            => oauth.Parameters.Select(p => new GetOrPostParameter(p.Name, HttpUtility.UrlDecode(p.Value)));
+        IEnumerable<Parameter> CreateUrlParameters() => oauth.Parameters.Select(p => new GetOrPostParameter(p.Name, HttpUtility.UrlDecode(p.Value)));
 
         string GetAuthorizationHeader() {
             var oathParameters =
                 oauth.Parameters
                     .OrderBy(x => x, WebPair.Comparer)
-                    .Select(x => $"{x.Name}=\"{x.WebValue}\"")
+                    .Select(x => x.ToWebPairString())
                     .ToList();
 
-            if (!Realm.IsEmpty())
-                oathParameters.Insert(0, $"realm=\"{OAuthTools.UrlEncodeRelaxed(Realm!)}\"");
+            if (!Realm.IsEmpty()) oathParameters.Insert(0, $"realm=\"{OAuthTools.UrlEncodeRelaxed(Realm!)}\"");
 
             return $"OAuth {string.Join(",", oathParameters)}";
         }
@@ -270,5 +265,6 @@ public class OAuth1Authenticator : IAuthenticator {
 
 static class ParametersExtensions {
     internal static IEnumerable<WebPair> ToWebParameters(this IEnumerable<Parameter> p)
-        => p.Select(x => new WebPair(Ensure.NotNull(x.Name, "Parameter name"), Ensure.NotNull(x.Value, "Parameter value").ToString()!));
+        // ReSharper disable once NotResolvedInText
+        => p.Select(x => new WebPair(Ensure.NotNull(x.Name, "Parameter name"), x.Value?.ToString()));
 }

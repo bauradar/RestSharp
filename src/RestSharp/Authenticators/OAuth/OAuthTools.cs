@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 using RestSharp.Authenticators.OAuth.Extensions;
@@ -24,7 +25,7 @@ static class OAuthTools {
     const string AlphaNumeric = Upper + Lower + Digit;
     const string Digit        = "1234567890";
     const string Lower        = "abcdefghijklmnopqrstuvwxyz";
-    const string Unreserved   = AlphaNumeric + "-._~";
+    const string Unreserved   = $"{AlphaNumeric}-._~";
     const string Upper        = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     static readonly Random                Random;
@@ -117,8 +118,9 @@ static class OAuthTools {
     // Generic Syntax," .) section 2.3) MUST be encoded.
     // ...
     // unreserved = ALPHA, DIGIT, '-', '.', '_', '~'
-    public static string UrlEncodeStrict(string value)
-        => string.Join("", value.Select(x => Unreserved.Contains(x) ? x.ToString() : $"%{(byte)x:X2}"));
+    [return: NotNullIfNotNull(nameof(value))]
+    internal static string? UrlEncodeStrict(string? value)
+        => value == null ? null : string.Join("", value.Select(x => Unreserved.Contains(x) ? x.ToString() : $"%{(byte)x:X2}"));
 
     /// <summary>
     /// Sorts a collection of key-value pairs by name, and then value if equal,
@@ -139,7 +141,7 @@ static class OAuthTools {
             .Where(x => !x.Name.EqualsIgnoreCase("oauth_signature"))
             .Select(x => new WebPair(UrlEncodeStrict(x.Name), UrlEncodeStrict(x.Value), x.Encode))
             .OrderBy(x => x, WebPair.Comparer)
-            .Select(x => $"{x.Name}={x.Value}");
+            .Select(x => x.ToWebPairString());
 
     /// <summary>
     /// Creates a request URL suitable for making OAuth requests.
@@ -151,8 +153,8 @@ static class OAuthTools {
     static string ConstructRequestUrl(Uri url) {
         Ensure.NotNull(url, nameof(url));
 
-        var basic  = url.Scheme == "http" && url.Port == 80;
-        var secure = url.Scheme == "https" && url.Port == 443;
+        var basic  = url is { Scheme: "http", Port : 80 };
+        var secure = url is { Scheme: "https", Port: 443 };
         var port   = basic || secure ? "" : $":{url.Port}";
 
         return $"{url.Scheme}://{url.Host}{port}{url.AbsolutePath}";

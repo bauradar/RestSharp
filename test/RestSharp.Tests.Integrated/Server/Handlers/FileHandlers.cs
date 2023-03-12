@@ -31,10 +31,12 @@ public static class FileHandlers {
 public class UploadController : ControllerBase {
     [HttpPost]
     [Route("upload")]
+#pragma warning disable CA1822
     public async Task<UploadResponse> Upload([FromForm] FormFile formFile) {
+#pragma warning restore CA1822
         var assetPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets");
         var file      = formFile.File;
-        await using var stream = file.OpenReadStream();
+        await using var stream = file!.OpenReadStream();
 
         var received = await stream.ReadAsBytes(default);
         var expected = await System.IO.File.ReadAllBytesAsync(Path.Combine(assetPath, file.FileName));
@@ -45,5 +47,5 @@ public class UploadController : ControllerBase {
 }
 
 public class FormFile {
-    public IFormFile File { get; set; }
+    public IFormFile? File { get; set; }
 }

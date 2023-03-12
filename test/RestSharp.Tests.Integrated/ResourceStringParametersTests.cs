@@ -24,10 +24,10 @@ public sealed class ResourceStringParametersTests : IDisposable {
     }
 
     static class RequestHandler {
-        public static Uri Url { get; private set; }
+        public static Uri? Url { get; private set; }
 
         public static void Handle(HttpListenerContext context) {
-            Url = context.Request.Url;
+            Url = context.Request.Url!;
             Handlers.Echo(context);
         }
     }

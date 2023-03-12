@@ -29,6 +29,6 @@ public class HttpHeadersTests : CaptureFixture {
         await client.ExecuteAsync(request);
 
         // Assert
-        RequestHeadCapturer.CapturedHeaders[headerName].Should().Be(headerValue);
+        RequestHeadCapturer.CapturedHeaders![headerName].Should().Be(headerValue);
     }
 }
